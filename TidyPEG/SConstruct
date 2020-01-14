@@ -1,0 +1,18 @@
+
+compile_env = Environment()
+compile_env.ParseConfig("llvm-config --cxxflags")
+compile_env.ParseConfig("llvm-config --libs all")
+compile_env.Append(CCFLAGS = ["-Wall", "-I./include", "-g"] )
+
+compile_core = compile_env.Object(Glob("src/core/*.cpp"))
+compile_parse = compile_env.Object(Glob("src/parse/*.cpp"))
+compile_semantics = compile_env.Object(Glob("src/semantics/*.cpp"))
+compile_useful = compile_env.Object(Glob("src/useful/*.cpp"))
+
+link_env = Environment()
+lib_tidypeg = link_env.StaticLibrary('lib/tidypeg', compile_core + compile_parse + compile_semantics + compile_useful)
+
+bin_env = compile_env.Clone()
+bin_env.ParseConfig("llvm-config --ldflags")
+bin_env.Prepend( LIBS=['tidypeg'], LIBPATH=['./lib'] )
+compile_tests = bin_env.Program("bin/test.out", "src/tests/TestExpression.cpp") 
